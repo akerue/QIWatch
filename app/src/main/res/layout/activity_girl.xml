@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#ff99cc"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+    <Button
+        android:layout_width="70dp"
+        android:layout_height="50dp"
+        android:id="@+id/welcome"
+        android:drawableTop="@drawable/pink_heart"
+        android:background="#444444"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="27dp" />
+
+    <Button
+        android:layout_width="70dp"
+        android:layout_height="50dp"
+        android:id="@+id/treat"
+        android:drawableTop="@drawable/beer"
+        android:background="#444444"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:layout_width="70dp"
+        android:layout_height="50dp"
+        android:id="@+id/ng"
+        android:drawableTop="@drawable/batsu"
+        android:background="#444444"
+        android:layout_alignBottom="@+id/treat"
+        android:layout_marginRight="10dp"
+        android:layout_alignParentEnd="true" />
+
+</RelativeLayout>
