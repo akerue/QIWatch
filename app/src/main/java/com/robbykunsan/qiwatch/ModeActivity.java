@@ -2,6 +2,7 @@ package com.robbykunsan.qiwatch;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.widget.RelativeLayout;
 import android.graphics.Color;
 import android.content.SharedPreferences;
@@ -19,5 +20,7 @@ public class ModeActivity extends Activity{
         int color = sharedPreferences.getInt("Status", Color.BLACK);
         final RelativeLayout rl = (RelativeLayout) this.findViewById(R.id.modeLayout);
         rl.setBackgroundColor(color);
+        Vibrator vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
+        vibrator.vibrate(10);
     }
 }
