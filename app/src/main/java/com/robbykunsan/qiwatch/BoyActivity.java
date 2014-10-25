@@ -45,7 +45,6 @@ public class BoyActivity extends Activity{
         Button educ_btn = (Button)findViewById(R.id.educ);
         setBtnListner(educ_btn, R.id.educ);
         setReceiver();
-        mBluetoothAdapter.startDiscovery();
     }
 
     private void setBtnListner(Button btn, final int btn_id) {
@@ -53,12 +52,10 @@ public class BoyActivity extends Activity{
                 new View.OnClickListener() {
                     public void onClick(View view) {
                         setSelected(btn_id);
+                        resetReceiver();
                     }
                 }
         );
-        //Intent discoverableOn = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        //discoverableOn.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-        //startActivity(discoverableOn);
     }
 
     private void setSelected(int id) {
@@ -90,6 +87,7 @@ public class BoyActivity extends Activity{
     }
 
     private void setReceiver(){
+        Log.d(TAG, "set receiver");
         bReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -104,7 +102,7 @@ public class BoyActivity extends Activity{
                     if (thread != null) {
                         thread.cancel();
                     }
-                    thread = new ReceiveThread();
+                    thread = new ReceiveThread(mDevice);
                     thread.start();
                     Intent i = new Intent(BoyActivity.this, com.robbykunsan.qiwatch.ModeActivity.class);
                     startActivity(i);
@@ -113,11 +111,26 @@ public class BoyActivity extends Activity{
         };
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(bReceiver, filter);
+        mBluetoothAdapter.startDiscovery();
+    }
+
+    private void resetReceiver() {
+        if (bReceiver != null) {
+            unregisterReceiver(bReceiver);
+        }
+        if (thread != null) {
+            thread.cancel();
+        }
+        setReceiver();
     }
 
     @Override
     protected void onDestroy () {
         super.onDestroy();
+        if (mBluetoothAdapter.isDiscovering()) {
+            mBluetoothAdapter.cancelDiscovery();
+        }
+        unregisterReceiver(bReceiver);
         if (thread != null) {
             thread.cancel();
         }
@@ -126,12 +139,12 @@ public class BoyActivity extends Activity{
     private class ReceiveThread extends Thread {
         private final BluetoothSocket clientSocket;
 
-        public ReceiveThread(){
+        public ReceiveThread(BluetoothDevice device){
             Log.i(TAG, "create thread");
             BluetoothSocket tmpSock = null;
 
             try{
-                tmpSock = mDevice.createRfcommSocketToServiceRecord(TECHBOOSTER_BTSAMPLE_UUID);
+                tmpSock = device.createRfcommSocketToServiceRecord(TECHBOOSTER_BTSAMPLE_UUID);
             }catch(IOException e){
                 e.printStackTrace();
             }
@@ -142,8 +155,10 @@ public class BoyActivity extends Activity{
             Log.i(TAG, "run thread");
             try{
                 //サーバー側に接続要求
+                Log.i(TAG, "send connect request");
                 clientSocket.connect();
             }catch(IOException e){
+                Log.e(TAG, "failed to connect");
                 try {
                     clientSocket.close();
                 } catch (IOException closeException) {
@@ -164,10 +179,6 @@ public class BoyActivity extends Activity{
 
         public void cancel() {
             try {
-                if (mBluetoothAdapter.isDiscovering()) {
-                    mBluetoothAdapter.cancelDiscovery();
-                }
-                unregisterReceiver(bReceiver);
                 clientSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();

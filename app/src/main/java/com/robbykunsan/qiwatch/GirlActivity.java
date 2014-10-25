@@ -18,11 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Created by Robbykunsan on 2014/10/18.
@@ -44,6 +41,12 @@ public class GirlActivity extends Activity{
         setBtnListner(money_btn, R.id.treat);
         Button educ_btn = (Button)findViewById(R.id.welcome);
         setBtnListner(educ_btn, R.id.welcome);
+        Boolean setResult = useScanMode();
+        if (setResult) {
+            Log.d(TAG, "Success to set scan mode");
+        } else {
+            Log.e(TAG, "SHIT!!!!");
+        }
     }
 
     @Override
@@ -52,6 +55,28 @@ public class GirlActivity extends Activity{
         if (thread != null) {
             thread.cancel();
         }
+    }
+
+    private Boolean useScanMode() {
+        Method[] methods = mBluetoothAdapter.getClass().getDeclaredMethods();
+        for (Method method: methods) {
+            if (method.getName().equals("setScanMode")) {
+                try {
+                    Boolean result = (Boolean) method.invoke(mBluetoothAdapter, new Object[]{new Integer(23), new Integer(3600)});
+                    return result;
+                } catch (IllegalArgumentException e) {
+                    //呼び出し：引数が異なる
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    //呼び出し：アクセス違反、保護されている
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    //ターゲットとなるメソッド自身の例外処理
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
     }
 
     private void setBtnListner(Button btn, final int btn_id) {
@@ -101,6 +126,7 @@ public class GirlActivity extends Activity{
         private BluetoothServerSocket serverSocket;
 
         public AcceptThread() {
+            Log.d(TAG, "Thread is created");
             try {
                 serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(SERVICE_NAME, SERVICE_ID);
             } catch (IOException e) { }
@@ -108,8 +134,10 @@ public class GirlActivity extends Activity{
 
         public void run() {
             BluetoothSocket socket = null;
+            Log.d(TAG, "Thread run");
             while (true) {
                 try {
+                    Log.d(TAG, "Waiting for connection request");
                     socket = serverSocket.accept();
                 } catch (IOException e) {
                     Log.e(TAG, "Fail to accept.", e);
@@ -117,33 +145,20 @@ public class GirlActivity extends Activity{
                 }
                 Log.d(TAG, "A connection was accepted.");
                 if (socket != null) {
-                    //connect(socket);
+                    connect(socket);
                     Intent i = new Intent(GirlActivity.this, com.robbykunsan.qiwatch.ModeActivity.class);
                     startActivity(i);
+                    break;
                 }
                 Log.d(TAG, "The session was closed. Listen again.");
             }
+            Log.d(TAG, "Thread is finished");
         }
 
         private void connect(BluetoothSocket socket) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
             try {
-                InputStream in = socket.getInputStream();
-                OutputStream out = socket.getOutputStream();
-
                 Log.d(TAG, "Connection established.");
-                out.write("Hello I'm Bluetooth! Press Q to quit.\r\n".getBytes());
-                while (true) {
-                    byte[] buffer = new byte[1024];
-                    int bytes = in.read(buffer);
-                    Log.d(TAG, "input =" + new String(buffer, 0, bytes));
-                    out.write((df.format(new Date()) + ": " + new String (buffer, 0, bytes) + "\r\n").getBytes());
-                    if (buffer[0] == 'q') {
-                        out.write(("Bye!\r\n").getBytes());
-                        break;
-                    }
-                }
                 socket.close();
 
             } catch (IOException e) {
