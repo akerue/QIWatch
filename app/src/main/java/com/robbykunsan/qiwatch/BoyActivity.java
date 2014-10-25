@@ -44,7 +44,7 @@ public class BoyActivity extends Activity{
         setBtnListner(money_btn, R.id.money);
         Button educ_btn = (Button)findViewById(R.id.educ);
         setBtnListner(educ_btn, R.id.educ);
-        setReceiver();
+        //setReceiver();
     }
 
     private void setBtnListner(Button btn, final int btn_id) {
