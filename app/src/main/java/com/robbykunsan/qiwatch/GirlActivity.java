@@ -28,7 +28,7 @@ import java.util.Date;
  * Created by Robbykunsan on 2014/10/18.
  */
 public class GirlActivity extends Activity{
-    private static final String TAG = "BTHello";
+    private static final String TAG = "Receive";
     private static final String SERVICE_NAME = "BTHello";
     private static final String SERIAL_PORT_SERVICE_ID = "00001101-0000-1000-8000-00805F9B34FB";
     private static final UUID SERVICE_ID = UUID.fromString(SERIAL_PORT_SERVICE_ID);
